@@ -14,9 +14,9 @@ router.get("/test", (req, res) => {
 // @desc create user
 // @access PUBLIC
 router.post("/create_user", (req, res) => {
-  UserModel.find({ name: req.body.name }).then(user => {
+  UserModel.find({ email: req.body.email }).then(user => {
     if (user.length > 0) {
-      return res.json({ name: "da name hay nhap name khac" });
+      return res.json({ name: "email da co vui long nhap email khac" });
     } else {
       const newUser = new UserModel(req.body);
       newUser.save().then(newuser => {
@@ -24,6 +24,20 @@ router.post("/create_user", (req, res) => {
       });
     }
   });
+});
+
+router.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  UserModel.findOne({ email: email })
+    .then(user => {
+      if (user.password !== password) {
+        res.status(400).json({ password: "khong khop password" });
+      } else {
+        res.json(user);
+      }
+    })
+    .catch(err => res.status(400).json(err));
 });
 
 export default router;

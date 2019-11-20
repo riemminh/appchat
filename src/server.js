@@ -27,5 +27,7 @@ mongoose
     server.listen(PORT, () => {
       console.log(`Server running on PORT ${PORT}`);
     });
+
+    io.on("connection", socket => {});
   })
   .catch(err => console.log(err));
