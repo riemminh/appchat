@@ -11,6 +11,9 @@ const UserSchema = new Schema(
     password: {
       type: String
     },
+    avatar: {
+      type: String
+    },
     isActive: {
       type: Boolean,
       default: false

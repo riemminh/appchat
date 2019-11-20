@@ -13,10 +13,12 @@ router.get("/test", (req, res) => {
 // GET @route /api/users/create_user
 // @desc create user
 // @access PUBLIC
-router.post("/create_user", (req, res) => {
-  UserModel.find({ email: req.body.email }).then(user => {
-    if (user.length > 0) {
-      return res.json({ name: "email da co vui long nhap email khac" });
+router.post("/register", (req, res) => {
+  UserModel.findOne({ email: req.body.email }).then(user => {
+    if (user) {
+      return res
+        .status(400)
+        .json({ email: "email da co vui long nhap email khac" });
     } else {
       const newUser = new UserModel(req.body);
       newUser.save().then(newuser => {
@@ -31,10 +33,14 @@ router.post("/login", (req, res) => {
   const password = req.body.password;
   UserModel.findOne({ email: email })
     .then(user => {
-      if (user.password !== password) {
-        res.status(400).json({ password: "khong khop password" });
+      if (user) {
+        if (user.password !== password) {
+          res.status(400).json({ password: "khong khop password" });
+        } else {
+          res.json(user);
+        }
       } else {
-        res.json(user);
+        res.status(400).json({ email: "email khong ton tai" });
       }
     })
     .catch(err => res.status(400).json(err));
