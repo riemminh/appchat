@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import { registerUser } from "../../actions/authActions";
 
 const actions = {
@@ -80,7 +81,7 @@ class Register extends Component {
 
             <button>create</button>
             <p className="message">
-              Already registered? <a href="#">Sign In</a>
+              Already registered? <Link to="/signin">Sign In</Link>
             </p>
           </form>
         </div>

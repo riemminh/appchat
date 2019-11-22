@@ -46,4 +46,20 @@ router.post("/login", (req, res) => {
     .catch(err => res.status(400).json(err));
 });
 
+router.post("/update_user", (req, res) => {
+  UserModel.findByIdAndUpdate(
+    "5dd50d5185949b24755e6a61",
+    { $set: { isActive: true } },
+    { new: true }
+  )
+    .then(user => res.json(user))
+    .catch(err => res.status(400).json(err));
+});
+
+router.get("/get_list_users", (req, res) => {
+  UserModel.find({ _id: { $ne: "5dd50d5185949b24755e6a61" } })
+    .then(users => res.json(users))
+    .catch(err => res.status(400).json(err));
+});
+
 export default router;
