@@ -1,4 +1,4 @@
-import { GET_ERRORS, SET_CURRENT_USER } from "./type";
+import { GET_ERRORS, SET_CURRENT_USER, CLEAR_CURRENT_USER } from "./type";
 import axios from "axios";
 
 export const registerUser = (userData, history) => dispatch => {
@@ -22,7 +22,7 @@ export const loginUser = (userData, history) => dispatch => {
       const user = res.data;
       localStorage.setItem("user", JSON.stringify(user));
       dispatch(setCurrentUser(user));
-      history.push("/chat");
+      history.push(`/chat/${user._id}`);
     })
     .catch(err => {
       if (err && err.response) {
@@ -39,4 +39,11 @@ export const setCurrentUser = user => {
     type: SET_CURRENT_USER,
     payload: user
   };
+};
+
+export const clearCurrentUser = () => dispatch => {
+  dispatch({
+    type: CLEAR_CURRENT_USER,
+    payload: {}
+  });
 };

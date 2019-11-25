@@ -19,13 +19,14 @@ class Router extends Component {
         <Switch>
           <Route exact path="/">
             {auth.isAuthenticated ? (
-              <Redirect to="/chat" />
+              <Redirect to={`/chat/${auth.user._id}`} />
             ) : (
               <Redirect to="/signin" />
             )}
           </Route>
           <Route path="/signin" component={Login} />
           <Route path="/register" component={Register} />
+          <PrivateRoute path="/chat/:id" component={Chat} />
           <PrivateRoute path="/chat" component={Chat} />
         </Switch>
       </div>

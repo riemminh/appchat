@@ -1,2 +1,6 @@
 export const GET_ERRORS = "GET_ERRORS";
 export const SET_CURRENT_USER = "SET_CURRENT_USER";
+export const CLEAR_CURRENT_USER = "CLEAR_CURRENT_USER";
+// chat type
+export const SET_TYPE_ROOM_GROUP = "SET_TYPE_ROOM_GROUP";
+export const SET_TYPE_ROOM_USER = "SET_TYPE_ROOM_USER";

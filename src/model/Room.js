@@ -1,4 +1,11 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model } from "mongoose";
+
+const User = new Schema({
+  user_id: {
+    type: Schema.Types.ObjectId,
+    ref: "users"
+  }
+});
 
 const RoomSchema = new Schema(
   {
@@ -8,15 +15,14 @@ const RoomSchema = new Schema(
     name2: {
       type: String
     },
-    members: [
-      {
-        user: Types.ObjectId,
-        ref: "users"
-      }
-    ],
+    members: [User],
     lastActive: {
       type: Date,
       default: Date.now
+    },
+    typeRoom: {
+      type: Boolean,
+      default: false // false = user | true = group
     }
   },
   {

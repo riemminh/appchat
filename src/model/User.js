@@ -14,9 +14,13 @@ const UserSchema = new Schema(
     avatar: {
       type: String
     },
-    isActive: {
+    isOnline: {
       type: Boolean,
       default: false
+    },
+    lastOnline: {
+      type: Date,
+      default: Date.now()
     }
   },
   {

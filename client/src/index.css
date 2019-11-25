@@ -106,20 +106,33 @@ body {
   width: 45px;
   height: 45px;
   margin-right: 0px;
+  margin-right: 10px;
 }
 
 .friend-list li a {
   position: relative;
   display: block;
-  padding: 10px;
+  padding: 15px 10px;
   transition: all 0.2s ease;
   -webkit-transition: all 0.2s ease;
   -moz-transition: all 0.2s ease;
   -ms-transition: all 0.2s ease;
   -o-transition: all 0.2s ease;
 }
-
-.friend-list li.active a {
+.friend-list li a:after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: rgb(155, 153, 153);
+  right: 8px;
+  top: 13px;
+  border-radius: 50%;
+}
+.friend-list li a.online:after {
+  background: rgb(66, 183, 42);
+}
+.friend-list li a.active {
   background-color: #f1f5fc;
 }
 
@@ -137,7 +150,7 @@ body {
 
 .friend-list li a .time {
   position: absolute;
-  top: 10px;
+  top: 23px;
   right: 8px;
 }
 
@@ -149,7 +162,7 @@ small,
 .friend-list li a .chat-alert {
   position: absolute;
   right: 8px;
-  top: 27px;
+  top: 40px;
   font-size: 10px;
   padding: 3px 5px;
 }
@@ -271,7 +284,7 @@ a:focus {
 .friend-list li a .chat-alert {
   position: absolute;
   right: 8px;
-  top: 27px;
+  top: 40px;
   font-size: 10px;
   padding: 3px 5px;
   border-radius: 0.25em;
@@ -281,12 +294,24 @@ a:focus {
   color: #fff;
 }
 .title_member {
-  font-size: 30px;
+  font-size: 20px;
   font-weight: bold;
-  padding: 15px;
-  margin-bottom: 15px;
+  padding: 10px;
+  margin-bottom: 10px;
 }
 .errors_email {
   color: red;
   font-size: 13px;
+}
+.logout-btn {
+  margin-left: -15px;
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
+
+.text-muted {
+  font-size: 11px;
+}
+.welcome {
+  padding: 20px;
 }

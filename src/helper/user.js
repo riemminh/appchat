@@ -11,18 +11,14 @@ export const getUserId = id => {
 
 // getListUser
 export const getListUser = id => {
-  return UserModel.find({ _id: { $ne: id } })
-    .then(users => res.json(users))
-    .catch(err => res.status(400).json(err));
+  return UserModel.find()
+    .then(users => users)
+    .catch(err => err);
 };
 
 // update user
-export const updateUserId = (id, isActive) => {
-  return UserModel.findByIdAndUpdate(
-    id,
-    { $set: { isActive: isActive } },
-    { new: true }
-  )
-    .then(user => res.json(user))
-    .catch(err => res.status(400).json(err));
+export const updateUserId = (id, dataUpdate) => {
+  return UserModel.findByIdAndUpdate(id, { $set: dataUpdate }, { new: true })
+    .then(user => user)
+    .catch(err => err);
 };
