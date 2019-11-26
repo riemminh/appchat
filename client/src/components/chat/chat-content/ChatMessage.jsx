@@ -1,30 +1,63 @@
 import React, { Component } from "react";
+import moment from "moment";
 
 class ChatMessage extends Component {
+  _isMousted = true;
+  componentWillReceiveProps(nextProps) {
+    if (this.props.dataMessage !== nextProps.dataMessage) {
+      if (this._isMousted) {
+        setTimeout(() => {
+          this.scrollToBottom();
+        }, 100);
+      }
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.dataMessage !== this.props.dataMessage) {
+      this.scrollToBottom();
+    }
+  }
+
+  componentWillUnmount() {
+    this._isMousted = false;
+  }
+
+  scrollToBottom = () => {
+    this.messagesEnd.scrollIntoView({ behavior: "smooth" });
+  };
+
   render() {
-    const { dataMessage } = this.props;
+    const { dataMessage, idUser } = this.props;
     return (
       <div className="chat-message">
         <ul className="chat">
           {dataMessage.length > 0 ? (
             dataMessage.map(chat => (
-              <li className="left clearfix">
-                <span className="chat-img pull-left">
-                  <img
-                    src="https://bootdey.com/img/Content/user_3.jpg"
-                    alt="User Avatar"
-                  />
+              <li
+                key={chat._id}
+                className={
+                  idUser === chat.msgTo._id ? "left clearfix" : "right clearfix"
+                }
+              >
+                <span
+                  className={
+                    idUser === chat.msgTo._id
+                      ? "chat-img pull-left"
+                      : "chat-img pull-right"
+                  }
+                >
+                  <img src={chat.msgTo.avatar} alt="User Avatar" />
                 </span>
                 <div className="chat-body clearfix">
                   <div className="header">
-                    <strong className="primary-font">John Doe</strong>
+                    <strong className="primary-font">{chat.msgTo.name}</strong>
                     <small className="pull-right text-muted">
-                      <i className="fa fa-clock-o"></i> 12 mins ago
+                      <i className="fa fa-clock-o"></i>{" "}
+                      {moment(chat.createdAt).fromNow()}
                     </small>
                   </div>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  </p>
+                  <p>{chat.msg}</p>
                 </div>
               </li>
             ))
@@ -53,6 +86,14 @@ class ChatMessage extends Component {
               </p>
             </div>
           </li> */}
+          <li>
+            <div
+              style={{ float: "left", clear: "both" }}
+              ref={el => {
+                this.messagesEnd = el;
+              }}
+            ></div>
+          </li>
         </ul>
       </div>
     );

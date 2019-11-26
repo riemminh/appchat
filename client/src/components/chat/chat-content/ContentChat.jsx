@@ -23,7 +23,7 @@ class ContentChat extends Component {
   _socket = io("http://localhost:5000");
   state = {
     roomId: "",
-    limitMessage: 5,
+    limitMessage: 10,
     currentPage: 1,
     dataMessage: []
   };
@@ -47,11 +47,20 @@ class ContentChat extends Component {
       }
     });
     this._socket.on("get-message-room", dataGetMessage => {
-      console.log(dataGetMessage);
-      this.setState({
-        ...this.state,
-        dataMessage: [...dataGetMessage, ...this.state.dataMessage]
-      });
+      if (this._isMousted) {
+        this.setState({
+          ...this.state,
+          dataMessage: [...dataGetMessage]
+        });
+      }
+    });
+    this._socket.on("save-message", () => {
+      const dataGetMessage = {
+        roomId: this.state.roomId,
+        limitMessage: this.state.limitMessage,
+        currentPage: this.state.currentPage
+      };
+      this._socket.emit("get-message-room", dataGetMessage);
     });
   }
 
@@ -67,6 +76,20 @@ class ContentChat extends Component {
     this._isMousted = false;
   }
 
+  handleSaveMessage = message => {
+    const { auth, match } = this.props;
+    const msgFrom = match.params.id;
+    const msgTo = auth.user._id;
+    const roomId = this.state.roomId;
+    const dataMessage = {
+      msgFrom,
+      msgTo,
+      roomId,
+      message
+    };
+    this._socket.emit("save-message", dataMessage);
+  };
+
   handleSetRoom = () => {
     const { match, auth } = this.props;
     const idParam = match.params.id;
@@ -81,8 +104,11 @@ class ContentChat extends Component {
   render() {
     return (
       <Fragment>
-        <ChatMessage dataMessage={this.state.dataMessage} />
-        <ChatBox roomId={this.state.roomId} />
+        <ChatMessage
+          idUser={this.props.auth.user._id}
+          dataMessage={this.state.dataMessage}
+        />
+        <ChatBox handleSaveMessage={this.handleSaveMessage} />
       </Fragment>
     );
   }

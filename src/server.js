@@ -8,6 +8,7 @@ import RoomModel from "./model/Room";
 import MessageModel from "./model/Message";
 
 import { getUserId, getListUser, updateUserId } from "./helper/user";
+import { saveMessage } from "./helper/chat";
 
 const app = express();
 const server = http.createServer(app);
@@ -108,13 +109,32 @@ mongoose
       // ==========start get messgae
 
       socket.on("get-message-room", dataGetMessage => {
-        MessageModel.find({ room: dataGetMessage.roomId }).then(messages => {
-          if (messages == "" || messages == undefined || messages == null) {
-            io.to(dataGetMessage.roomId).emit("get-message-room", []);
-          } else {
-            io.to(dataGetMessage.roomId).emit("get-message-room", messages);
-          }
-        });
+        MessageModel.find({ room: dataGetMessage.roomId })
+          .sort({ createdAt: -1 })
+          .populate("msgTo")
+          .limit(dataGetMessage.limitMessage)
+          .skip(dataGetMessage.limitMessage * (dataGetMessage.currentPage - 1))
+          .then(messages => {
+            let messagesReverse = messages.sort();
+            if (messages == "" || messages == undefined || messages == null) {
+              io.to(dataGetMessage.roomId).emit("get-message-room", []);
+            } else {
+              io.to(dataGetMessage.roomId).emit(
+                "get-message-room",
+                messagesReverse
+              );
+            }
+          })
+          .catch(err => console.log(err));
+      });
+
+      socket.on("save-message", dataMessage => {
+        console.log(dataMessage.roomId);
+        saveMessage(dataMessage)
+          .then(() => {
+            socket.to(dataMessage.roomId).emit("save-message");
+          })
+          .catch(err => console.log(err));
       });
       // ==========end get messgae
       // disconnect

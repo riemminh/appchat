@@ -315,3 +315,9 @@ a:focus {
 .welcome {
   padding: 20px;
 }
+.pull-left {
+  float: left;
+}
+.pull-right {
+  float: right;
+}
