@@ -82,7 +82,7 @@ class ContentChat extends Component {
     return (
       <Fragment>
         <ChatMessage dataMessage={this.state.dataMessage} />
-        <ChatBox />
+        <ChatBox roomId={this.state.roomId} />
       </Fragment>
     );
   }
