@@ -25,50 +25,56 @@ class ContentChat extends Component {
     roomId: "",
     limitMessage: 10,
     currentPage: 1,
-    dataMessage: []
+    dataMessage: [],
+    user_connected: ""
+  };
+
+  handleGetroom = () => {
+    const { match, auth } = this.props;
+    const dataGetroom = {
+      idParam: match.params.id,
+      idUser: auth.user._id
+    };
+    this._socket.emit("set-room", dataGetroom);
   };
   componentDidMount() {
-    this.handleSetRoom();
+    this.handleGetroom();
+    // get message
+
+    let dataGetMessage;
+
     this._socket.on("set-room", roomId => {
-      if (this._isMousted) {
-        this.setState(
-          {
-            roomId: roomId
-          },
-          () => {
-            const dataGetMessage = {
-              roomId: this.state.roomId,
-              limitMessage: this.state.limitMessage,
-              currentPage: this.state.currentPage
-            };
-            this._socket.emit("get-message-room", dataGetMessage);
-          }
-        );
-      }
-    });
-    this._socket.on("get-message-room", dataGetMessage => {
-      if (this._isMousted) {
-        this.setState({
+      console.log(roomId);
+      this.setState(
+        {
           ...this.state,
-          dataMessage: [...dataGetMessage]
-        });
-      }
+          roomId: roomId
+        },
+        () => {
+          dataGetMessage = {
+            roomId: this.state.roomId,
+            limitMessage: this.state.limitMessage,
+            currentPage: this.state.currentPage
+          };
+          this._socket.emit("get-message-room", dataGetMessage);
+        }
+      );
     });
-    this._socket.on("save-message", () => {
-      const dataGetMessage = {
-        roomId: this.state.roomId,
-        limitMessage: this.state.limitMessage,
-        currentPage: this.state.currentPage
-      };
+
+    this._socket.on("get-message", () => {
+      console.log("chay-messgae");
       this._socket.emit("get-message-room", dataGetMessage);
+    });
+    this._socket.on("get-message-room", messages => {
+      this.setState({
+        dataMessage: messages
+      });
     });
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { match } = this.props;
-
-    if (prevProps.match.params.id !== match.params.id) {
-      this.handleSetRoom();
+    if (this.props.match.params.id !== prevProps.match.params.id) {
+      this.handleGetroom();
     }
   }
 
@@ -88,17 +94,6 @@ class ContentChat extends Component {
       message
     };
     this._socket.emit("save-message", dataMessage);
-  };
-
-  handleSetRoom = () => {
-    const { match, auth } = this.props;
-    const idParam = match.params.id;
-    const idUser = auth.user._id;
-    const data = {
-      idParam,
-      idUser
-    };
-    this._socket.emit("set-room", data);
   };
 
   render() {

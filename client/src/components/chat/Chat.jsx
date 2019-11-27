@@ -60,6 +60,7 @@ class Chat extends Component {
           >
             Logout
           </button>
+          <button className="btn btn-success name-btn">{auth.user.name}</button>
           <div className="row">
             <div className="col-md-4 bg-white ">
               {/* <!-- member list --> */}
