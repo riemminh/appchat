@@ -70,6 +70,13 @@ class ContentChat extends Component {
         dataMessage: messages
       });
     });
+
+    this._socket.on("set-room-bug", () => {
+      const { auth } = this.props;
+      const idUser = auth.user._id;
+      console.log(idUser);
+      this.props.history.push(`/chat/${idUser}`);
+    });
   }
 
   componentDidUpdate(prevProps, prevState) {

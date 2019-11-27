@@ -4,6 +4,7 @@ import http from "http";
 import socketIo from "socket.io";
 import bodyParser from "body-parser";
 import RouterUser from "./routes/api/user";
+import UserModel from "./model/User";
 import RoomModel from "./model/Room";
 import MessageModel from "./model/Message";
 
@@ -63,46 +64,59 @@ mongoose
       const handleCheckTypeRoom = data => {
         let currentRoom, reverseRoom;
         const { idParam, idUser } = data;
-
-        RoomModel.findOne({
-          $or: [
-            { name1: `${idParam}_${idParam}` },
-            { name2: `${idParam}_${idParam}` }
-          ]
-        }).then(group => {
-          if (group) {
-            console.log("group");
-            // handleSetRoom(group._id);
-          } else {
-            currentRoom = `${idParam}_${idUser}`;
-            reverseRoom = `${idUser}_${idParam}`;
+        if (idParam) {
+          if (idParam.match(/^[0-9a-fA-F]{24}$/)) {
             RoomModel.findOne({
               $or: [
-                { name1: currentRoom },
-                { name2: reverseRoom },
-                { name1: reverseRoom },
-                { name2: currentRoom }
+                { name1: `${idParam}_${idParam}` },
+                { name2: `${idParam}_${idParam}` }
               ]
-            })
-              .then(roomUser => {
-                if (roomUser) {
-                  handleSetRoom(roomUser);
-                } else {
-                  const newRoom = new RoomModel({
-                    name1: currentRoom,
-                    name2: reverseRoom
-                  });
-                  newRoom
-                    .save()
-                    .then(room => {
-                      handleSetRoom(room);
-                    })
-                    .catch(err => console.log(err));
-                }
-              })
-              .catch(err => console.log(err));
+            }).then(group => {
+              if (group) {
+                console.log("group");
+                // handleSetRoom(group._id);
+              } else {
+                currentRoom = `${idParam}_${idUser}`;
+                reverseRoom = `${idUser}_${idParam}`;
+                UserModel.findById(idParam)
+                  .then(user => {
+                    if (user) {
+                      RoomModel.findOne({
+                        $or: [
+                          { name1: currentRoom },
+                          { name2: reverseRoom },
+                          { name1: reverseRoom },
+                          { name2: currentRoom }
+                        ]
+                      }).then(roomUser => {
+                        if (roomUser) {
+                          handleSetRoom(roomUser);
+                        } else {
+                          const newRoom = new RoomModel({
+                            name1: currentRoom,
+                            name2: reverseRoom
+                          });
+                          newRoom
+                            .save()
+                            .then(room => {
+                              handleSetRoom(room);
+                            })
+                            .catch(err => console.log(err));
+                        }
+                      });
+                    } else {
+                      socket.emit("set-room-bug");
+                    }
+                  })
+                  .catch(err => console.log(err));
+              }
+            });
+          } else {
+            socket.emit("set-room-bug");
           }
-        });
+        } else {
+          socket.emit("set-room-bug");
+        }
       };
 
       const handleSetRoom = room => {
