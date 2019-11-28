@@ -4,6 +4,7 @@ import http from "http";
 import socketIo from "socket.io";
 import bodyParser from "body-parser";
 import RouterUser from "./routes/api/user";
+import UserModel from "./model/User";
 import RoomModel from "./model/Room";
 import MessageModel from "./model/Message";
 
@@ -63,52 +64,65 @@ mongoose
       const handleCheckTypeRoom = data => {
         let currentRoom, reverseRoom;
         const { idParam, idUser } = data;
-
-        RoomModel.findOne({
-          $or: [
-            { name1: `${idParam}_${idParam}` },
-            { name2: `${idParam}_${idParam}` }
-          ]
-        }).then(group => {
-          if (group) {
-            console.log("group");
-            // handleSetRoom(group._id);
-          } else {
-            currentRoom = `${idParam}_${idUser}`;
-            reverseRoom = `${idUser}_${idParam}`;
+        if (idParam) {
+          if (idParam.match(/^[0-9a-fA-F]{24}$/)) {
             RoomModel.findOne({
               $or: [
-                { name1: currentRoom },
-                { name2: reverseRoom },
-                { name1: reverseRoom },
-                { name2: currentRoom }
+                { name1: `${idParam}_${idParam}` },
+                { name2: `${idParam}_${idParam}` }
               ]
-            })
-              .then(roomUser => {
-                if (roomUser) {
-                  handleSetRoom(roomUser);
-                } else {
-                  const newRoom = new RoomModel({
-                    name1: currentRoom,
-                    name2: reverseRoom
-                  });
-                  newRoom
-                    .save()
-                    .then(room => {
-                      handleSetRoom(room);
-                    })
-                    .catch(err => console.log(err));
-                }
-              })
-              .catch(err => console.log(err));
+            }).then(group => {
+              if (group) {
+                console.log("group");
+                // handleSetRoom(group._id);
+              } else {
+                currentRoom = `${idParam}_${idUser}`;
+                reverseRoom = `${idUser}_${idParam}`;
+                UserModel.findById(idParam)
+                  .then(user => {
+                    if (user) {
+                      RoomModel.findOne({
+                        $or: [
+                          { name1: currentRoom },
+                          { name2: reverseRoom },
+                          { name1: reverseRoom },
+                          { name2: currentRoom }
+                        ]
+                      }).then(roomUser => {
+                        if (roomUser) {
+                          handleSetRoom(roomUser);
+                        } else {
+                          const newRoom = new RoomModel({
+                            name1: currentRoom,
+                            name2: reverseRoom
+                          });
+                          newRoom
+                            .save()
+                            .then(room => {
+                              handleSetRoom(room);
+                            })
+                            .catch(err => console.log(err));
+                        }
+                      });
+                    } else {
+                      socket.emit("set-room-bug");
+                    }
+                  })
+                  .catch(err => console.log(err));
+              }
+            });
+          } else {
+            socket.emit("set-room-bug");
           }
-        });
+        } else {
+          socket.emit("set-room-bug");
+        }
       };
 
       const handleSetRoom = room => {
         socket.room = room._id;
         socket.join(socket.room);
-        console.log(socket.room + " day la join room id");
+        // console.log(socket.room + " day la join room id");
         socket.emit("set-room", socket.room);
       };
       socket.on("set-room", data => {
@@ -118,20 +132,40 @@ mongoose
       // ==========start get messgae
 
       socket.on("get-message-room", dataGetMessage => {
-        console.log(dataGetMessage.roomId + " chay cai nay");
-        MessageModel.find({ room: dataGetMessage.roomId })
-          .sort({ createdAt: -1 })
-          .populate("msgTo")
-          .limit(dataGetMessage.limitMessage)
-          .skip(dataGetMessage.limitMessage * (dataGetMessage.currentPage - 1))
-          .then(messages => {
-            let messagesReverse = messages.sort();
-            if (messages == "" || messages == undefined || messages == null) {
-              socket.emit("get-message-room", []);
-            } else {
-              // console.log(messagesReverse);
-              socket.emit("get-message-room", messagesReverse);
-            }
+        console.log(dataGetMessage);
+        MessageModel.updateMany(
+          {
+            $and: [
+              { room: dataGetMessage.roomId },
+              { msgTo: dataGetMessage.idUser },
+              { unread: false }
+            ]
+          },
+          { $set: { unread: true } }
+        )
+          .then(() => {
+            console.log("update test");
+            MessageModel.find({ room: dataGetMessage.roomId })
+              .sort({ createdAt: -1 })
+              .limit(dataGetMessage.limitMessage)
+              .skip(
+                dataGetMessage.currentPage * (dataGetMessage.currentPage - 1)
+              )
+              .populate("msgFrom")
+              .then(messages => {
+                let messagesReverse = messages.sort();
+                if (
+                  messages == "" ||
+                  messages == undefined ||
+                  messages == null
+                ) {
+                  socket.emit("get-message-room", []);
+                } else {
+                  // console.log(messagesReverse);
+                  socket.emit("get-message-room", messagesReverse);
+                }
+              })
+              .catch(err => console.log(err));
           })
           .catch(err => console.log(err));
       });

@@ -22,7 +22,7 @@ const MessageSchema = new Schema(
       type: ObjectId,
       ref: "rooms"
     },
-    unread: {
+    unreadMessage: {
       type: Boolean,
       default: false
     },

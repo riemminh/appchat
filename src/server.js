@@ -132,19 +132,18 @@ mongoose
       // ==========start get messgae
 
       socket.on("get-message-room", dataGetMessage => {
-        console.log(dataGetMessage);
         MessageModel.updateMany(
           {
             $and: [
               { room: dataGetMessage.roomId },
               { msgTo: dataGetMessage.idUser },
-              { unread: false }
+              { unreadMessage: false }
             ]
           },
-          { $set: { unread: true } }
+          { $set: { unreadMessage: true } },
+          { new: true }
         )
           .then(() => {
-            console.log("update test");
             MessageModel.find({ room: dataGetMessage.roomId })
               .sort({ createdAt: -1 })
               .limit(dataGetMessage.limitMessage)

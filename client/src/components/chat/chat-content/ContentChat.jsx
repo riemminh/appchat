@@ -59,6 +59,7 @@ class ContentChat extends Component {
               currentPage: this.state.currentPage,
               idUser: this.props.auth.user._id
             };
+            // this._socket.emit("read-message", dataGetMessage);
             this._socket.emit("get-message-room", dataGetMessage);
           }
         );
@@ -70,9 +71,18 @@ class ContentChat extends Component {
       this._socket.emit("get-message-room", dataGetMessage);
     });
     this._socket.on("get-message-room", messages => {
+      // console.log(messages);
+      let newArrayFilterTrue = messages.filter(
+        item => item.unreadMessage === true
+      );
+      let newArrayFilterFalse = messages.filter(
+        item => item.unreadMessage === false
+      );
+      let resultOke = [...newArrayFilterTrue, ...newArrayFilterFalse];
+
       if (this._isMousted) {
         this.setState({
-          dataMessage: messages
+          dataMessage: resultOke
         });
       }
     });
@@ -90,6 +100,8 @@ class ContentChat extends Component {
     const { dataMessage, isUserActive, roomId } = this.state;
     if (match.params.id !== prevProps.match.params.id) {
       this.handleGetroom();
+    }
+    if (dataMessage !== prevProps.dataMessage) {
     }
   }
 
