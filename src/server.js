@@ -122,7 +122,7 @@ mongoose
       const handleSetRoom = room => {
         socket.room = room._id;
         socket.join(socket.room);
-        console.log(socket.room + " day la join room id");
+        // console.log(socket.room + " day la join room id");
         socket.emit("set-room", socket.room);
       };
       socket.on("set-room", data => {
@@ -132,20 +132,40 @@ mongoose
       // ==========start get messgae
 
       socket.on("get-message-room", dataGetMessage => {
-        console.log(dataGetMessage.roomId + " chay cai nay");
-        MessageModel.find({ room: dataGetMessage.roomId })
-          .sort({ createdAt: -1 })
-          .populate("msgTo")
-          .limit(dataGetMessage.limitMessage)
-          .skip(dataGetMessage.limitMessage * (dataGetMessage.currentPage - 1))
-          .then(messages => {
-            let messagesReverse = messages.sort();
-            if (messages == "" || messages == undefined || messages == null) {
-              socket.emit("get-message-room", []);
-            } else {
-              // console.log(messagesReverse);
-              socket.emit("get-message-room", messagesReverse);
-            }
+        console.log(dataGetMessage);
+        MessageModel.updateMany(
+          {
+            $and: [
+              { room: dataGetMessage.roomId },
+              { msgTo: dataGetMessage.idUser },
+              { unread: false }
+            ]
+          },
+          { $set: { unread: true } }
+        )
+          .then(() => {
+            console.log("update test");
+            MessageModel.find({ room: dataGetMessage.roomId })
+              .sort({ createdAt: -1 })
+              .limit(dataGetMessage.limitMessage)
+              .skip(
+                dataGetMessage.currentPage * (dataGetMessage.currentPage - 1)
+              )
+              .populate("msgFrom")
+              .then(messages => {
+                let messagesReverse = messages.sort();
+                if (
+                  messages == "" ||
+                  messages == undefined ||
+                  messages == null
+                ) {
+                  socket.emit("get-message-room", []);
+                } else {
+                  // console.log(messagesReverse);
+                  socket.emit("get-message-room", messagesReverse);
+                }
+              })
+              .catch(err => console.log(err));
           })
           .catch(err => console.log(err));
       });

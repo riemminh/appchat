@@ -37,21 +37,25 @@ class ChatMessage extends Component {
               <li
                 key={chat._id}
                 className={
-                  idUser === chat.msgTo._id ? "left clearfix" : "right clearfix"
+                  idUser === chat.msgFrom._id
+                    ? "left clearfix"
+                    : "right clearfix"
                 }
               >
                 <span
                   className={
-                    idUser === chat.msgTo._id
+                    idUser === chat.msgFrom._id
                       ? "chat-img pull-left"
                       : "chat-img pull-right"
                   }
                 >
-                  <img src={chat.msgTo.avatar} alt="User Avatar" />
+                  <img src={chat.msgFrom.avatar} alt="User Avatar" />
                 </span>
                 <div className="chat-body clearfix">
                   <div className="header">
-                    <strong className="primary-font">{chat.msgTo.name}</strong>
+                    <strong className="primary-font">
+                      {chat.msgFrom.name}
+                    </strong>
                     <small className="pull-right text-muted">
                       <i className="fa fa-clock-o"></i>{" "}
                       {moment(chat.createdAt).fromNow()}

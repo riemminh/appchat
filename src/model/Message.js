@@ -4,8 +4,12 @@ const ObjectId = Types.ObjectId;
 
 const MessageSchema = new Schema(
   {
-    msgFrom: {
+    msgToRoom: {
       type: String
+    },
+    msgFrom: {
+      type: Schema.Types.ObjectId,
+      ref: "users"
     },
     msgTo: {
       type: Schema.Types.ObjectId,
@@ -17,6 +21,14 @@ const MessageSchema = new Schema(
     room: {
       type: ObjectId,
       ref: "rooms"
+    },
+    unread: {
+      type: Boolean,
+      default: false
+    },
+    dateMessage: {
+      type: Date,
+      default: Date.now()
     }
   },
   {
