@@ -28,6 +28,7 @@ const MessageSchema = new Schema(
       type: Boolean,
       default: false
     },
+    listUserRead: { type: Array },
     dateMessage: {
       type: Date,
       default: Date.now()

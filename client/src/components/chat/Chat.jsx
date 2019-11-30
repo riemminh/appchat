@@ -17,7 +17,8 @@ class Chat extends Component {
   state = {
     endpoint: "http://localhost:5000",
     oldmessage: [],
-    listsiderbar: []
+    listsiderbar: [],
+    groups: []
   };
   componentDidMount() {
     const { auth } = this.props;
@@ -25,6 +26,14 @@ class Chat extends Component {
     this._socket = io(endpoint);
     this._socket.on("connect", () => {
       this._socket.emit("set-user-data", auth.user);
+    });
+    this._socket.on("get-all-group-data", groups => {
+      if (this._isMousted) {
+        this.setState({
+          ...this.state,
+          groups: groups
+        });
+      }
     });
     this._socket.on("get-all-user-data", users => {
       if (this._isMousted) {
@@ -65,6 +74,7 @@ class Chat extends Component {
             <div className="col-md-4 bg-white ">
               {/* <!-- member list --> */}
               <SiderbarChat
+                groups={this.state.groups}
                 idUser={auth.user._id}
                 listsiderbar={this.state.listsiderbar}
               />

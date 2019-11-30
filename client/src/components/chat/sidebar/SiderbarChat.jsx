@@ -4,40 +4,49 @@ import PropType from "prop-types";
 import { NavLink } from "react-router-dom";
 import moment from "moment";
 import CountUnread from "./CountUnread";
+import CountUnreadGroups from "./CountUnreadGroups";
 import MessageUnread from "./MessageUnread";
 
 const PropTyeps = {
   listsiderbar: PropType.array,
-  idUser: PropType.string
+  idUser: PropType.string,
+  groups: PropType.array
 };
 
 const actions = {};
 class SiderbarChat extends Component {
   render() {
-    const { listsiderbar, idUser } = this.props;
+    const { listsiderbar, idUser, groups } = this.props;
     return (
       <Fragment>
         <div className=" row border-bottom padding-sm title_member">Group</div>
         <ul className="friend-list">
-          <li>
-            <NavLink to={`/chat/123123123`} className="clearfix">
-              <img
-                src="https://bootdey.com/img/Content/user_2.jpg"
-                alt=""
-                className="img-circle"
-              />
-              <div className="friend-name">
-                <strong>Jane Doe</strong>
-              </div>
-              <div className="last-message text-muted">
+          {groups.map(group => (
+            <li key={group._id}>
+              <NavLink
+                to={`/chat/${group._id}`}
+                className="clearfix group-no-online"
+              >
+                <img
+                  src="https://bootdey.com/img/Content/user_2.jpg"
+                  alt=""
+                  className="img-circle"
+                />
+                <div className="friend-name">
+                  <strong>{group.nameGroup}</strong>
+                </div>
+                {/* <div className="last-message text-muted">
                 Lorem ipsum dolor sit amet.
-              </div>
-              <small className="time text-muted">5 mins ago</small>
-              <small className="chat-alert text-muted">
-                <i className="fa fa-check"></i>
-              </small>
-            </NavLink>
-          </li>
+              </div> */}
+                {/* <small className="time text-muted">5 mins ago</small> */}
+                <CountUnreadGroups
+                  listGroup={group._id}
+                  groups={groups}
+                  idUserActive={idUser}
+                />
+              </NavLink>
+            </li>
+          ))}
         </ul>
         <div className=" row border-bottom padding-sm title_member">Member</div>
         <ul className="friend-list">

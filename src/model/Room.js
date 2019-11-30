@@ -15,6 +15,9 @@ const RoomSchema = new Schema(
     name2: {
       type: String
     },
+    nameGroup: {
+      type: String
+    },
     members: [User],
     lastActive: {
       type: Date,

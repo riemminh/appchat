@@ -8,8 +8,9 @@ import UserModel from "./model/User";
 import RoomModel from "./model/Room";
 import MessageModel from "./model/Message";
 
-import { getUserId, getListUser, updateUserId } from "./helper/user";
+import { getListUser, updateUserId } from "./helper/user";
 import { saveMessage } from "./helper/chat";
+import { getListGroups } from "./helper/room";
 
 const app = express();
 const server = http.Server(app);
@@ -51,6 +52,12 @@ mongoose
         // hien thi list user sidebar
         updateUserId(socket.id_user, { isOnline: true })
           .then(user => {
+            getListGroups()
+              .then(groups => {
+                io.sockets.emit("get-all-group-data", groups);
+              })
+              .catch(err => console.log(err));
+
             getListUser(socket.id_user)
               .then(users => {
                 io.sockets.emit("get-all-user-data", users);
@@ -73,8 +80,7 @@ mongoose
               ]
             }).then(group => {
               if (group) {
-                console.log("group");
-                // handleSetRoom(group._id);
+                handleSetRoom(group._id, group.typeRoom);
               } else {
                 currentRoom = `${idParam}_${idUser}`;
                 reverseRoom = `${idUser}_${idParam}`;
@@ -119,18 +125,53 @@ mongoose
         }
       };
 
-      const handleSetRoom = room => {
+      const handleSetRoom = (room, typeRoom) => {
+        if (!typeRoom) typeRoom = false;
         socket.room = room._id;
         socket.join(socket.room);
         // console.log(socket.room + " day la join room id");
-        socket.emit("set-room", socket.room);
+        socket.emit("set-room", socket.room, typeRoom);
       };
       socket.on("set-room", data => {
         handleCheckTypeRoom(data);
       });
       // ==========end set-room
       // ==========start get messgae
-
+      socket.on("get-message-room-groups", dataGetMessage => {
+        MessageModel.updateMany(
+          {
+            listUserRead: { $ne: dataGetMessage.idUser },
+            room: dataGetMessage.roomId
+          },
+          { $push: { listUserRead: dataGetMessage.idUser } }
+        )
+          .then(() => {
+            MessageModel.find({
+              room: dataGetMessage.roomId
+            })
+              .sort({ createdAt: -1 })
+              .limit(dataGetMessage.limitMessage)
+              .skip(
+                dataGetMessage.currentPage * (dataGetMessage.currentPage - 1)
+              )
+              .populate("msgFrom")
+              .then(messages => {
+                let messagesReverse = messages.sort();
+                if (
+                  messages == "" ||
+                  messages == undefined ||
+                  messages == null
+                ) {
+                  socket.emit("get-message-room-groups", []);
+                } else {
+                  // console.log(messagesReverse);
+                  socket.emit("get-message-room-groups", messagesReverse);
+                }
+              })
+              .catch(err => console.log(err));
+          })
+          .catch(err => res.status(400).json(err));
+      });
       socket.on("get-message-room", dataGetMessage => {
         MessageModel.updateMany(
           {
@@ -178,6 +219,14 @@ mongoose
       });
       // ==========end get messgae
       // ==========end get messgae unread
+      socket.on("get-lai-groups", () => {
+        console.log("get-lai-groups");
+        getListGroups()
+          .then(groups => {
+            io.sockets.emit("get-all-group-data", groups);
+          })
+          .catch(err => console.log(err));
+      });
       const getLaiUser = () => {
         getListUser(socket.id_user)
           .then(users => {
@@ -199,6 +248,18 @@ mongoose
           .sort({ createdAt: -1 })
           .then(mes => {
             socket.emit("last-message-unread", mes);
+          })
+          .catch(err => console.log(err));
+      });
+      socket.on("query-count-unread-groups", data => {
+        // toi cho nay
+        MessageModel.find({
+          listUserRead: { $ne: data.idUserActive },
+          room: data.listGroup
+        })
+          .countDocuments()
+          .then(countUnread => {
+            socket.emit("query-count-unread-groups", countUnread);
           })
           .catch(err => console.log(err));
       });

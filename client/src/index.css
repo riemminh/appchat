@@ -130,6 +130,9 @@ body {
   top: 13px;
   border-radius: 50%;
 }
+.friend-list li a.group-no-online:after {
+  display: none;
+}
 .friend-list li a.online:after {
   background: rgb(66, 183, 42);
 }

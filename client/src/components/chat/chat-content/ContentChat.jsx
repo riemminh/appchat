@@ -23,6 +23,7 @@ class ContentChat extends Component {
   _socket = io("http://localhost:5000");
   state = {
     roomId: "",
+    typeRoom: false,
     limitMessage: 10,
     currentPage: 1,
     dataMessage: [],
@@ -42,15 +43,16 @@ class ContentChat extends Component {
   componentDidMount() {
     this.handleGetroom();
     // get message
-
-    this._socket.on("set-room", roomId => {
+    this._socket.on("set-room", (roomId, typeRoom) => {
+      // console.log(typeRoom);
       // console.log(roomId);
       if (this._isMousted) {
         this.setState(
           {
             ...this.state,
             roomId: roomId,
-            isUserActive: true
+            isUserActive: true,
+            typeRoom: typeRoom
           },
           () => {
             dataGetMessage = {
@@ -59,8 +61,11 @@ class ContentChat extends Component {
               currentPage: this.state.currentPage,
               idUser: this.props.auth.user._id
             };
-            // this._socket.emit("read-message", dataGetMessage);
-            this._socket.emit("get-message-room", dataGetMessage);
+            if (this.state.typeRoom) {
+              this._socket.emit("get-message-room-groups", dataGetMessage);
+            } else {
+              this._socket.emit("get-message-room", dataGetMessage);
+            }
           }
         );
       }
@@ -68,7 +73,25 @@ class ContentChat extends Component {
 
     this._socket.on("get-message", () => {
       // console.log("chay-messgae");
-      this._socket.emit("get-message-room", dataGetMessage);
+      const { typeRoom } = this.state;
+      if (typeRoom) {
+        this._socket.emit("get-message-room-groups", dataGetMessage);
+      } else {
+        this._socket.emit("get-message-room", dataGetMessage);
+      }
+    });
+    this._socket.on("get-message-room-groups", messages => {
+      this._socket.emit("get-lai-groups");
+      const funSortDate = messages.sort(function(a, b) {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+      let newReverse = [...funSortDate].reverse();
+      if (this._isMousted) {
+        this.setState({
+          ...this.state,
+          dataMessage: newReverse
+        });
+      }
     });
     this._socket.on("get-message-room", messages => {
       // console.log(messages);
@@ -83,6 +106,7 @@ class ContentChat extends Component {
       this._socket.emit("get-lai-users");
       if (this._isMousted) {
         this.setState({
+          ...this.state,
           dataMessage: resultOke
         });
       }
@@ -115,11 +139,15 @@ class ContentChat extends Component {
     const msgFrom = auth.user._id;
     const msgTo = match.params.id;
     const roomId = this.state.roomId;
+    const typeRoom = this.state.typeRoom;
+    const idUserActive = auth.user._id;
     const dataMessage = {
       msgFrom,
       msgTo,
       roomId,
-      message
+      message,
+      typeRoom,
+      idUserActive
     };
     this._socket.emit("save-message", dataMessage);
   };

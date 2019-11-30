@@ -1,13 +1,6 @@
 import UserModel from "../model/User";
 
 // get user
-export const getUserId = id => {
-  return UserModel.findById(id)
-    .then(user => {
-      return user;
-    })
-    .catch(err => console.log(err));
-};
 
 // getListUser
 export const getListUser = id => {

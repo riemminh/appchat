@@ -1,12 +1,25 @@
 import MessageModel from "../model/Message";
 
 export const saveMessage = dataMessage => {
-  const newmessage = new MessageModel({
-    msgFrom: dataMessage.msgFrom,
-    msgTo: dataMessage.msgTo,
-    msg: dataMessage.message,
-    room: dataMessage.roomId
-  });
+  let newmessage;
+  if (dataMessage.typeRoom) {
+    newmessage = new MessageModel({
+      msgFrom: dataMessage.msgFrom,
+      msgTo: dataMessage.msgTo,
+      msg: dataMessage.message,
+      unreadMessage: true,
+      room: dataMessage.roomId,
+      listUserRead: [dataMessage.idUserActive]
+    });
+  } else {
+    newmessage = new MessageModel({
+      msgFrom: dataMessage.msgFrom,
+      msgTo: dataMessage.msgTo,
+      msg: dataMessage.message,
+      room: dataMessage.roomId
+    });
+  }
+
   return newmessage
     .save()
     .then(newMsg => newMsg)

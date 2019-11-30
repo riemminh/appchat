@@ -1,7 +1,28 @@
 import { Router } from "express";
 import UserModel from "../../model/User";
+import RoomModel from "../../model/Room";
+import MessageModel from "../../model/Message";
 
 const router = Router();
+
+router.get("/wow", (req, res) => {
+  MessageModel.find({
+    listUserRead: { $ne: "5dd8abc3ffd7103014c7df4a" },
+    room: "5de207b4d13bed350c2cd584"
+  })
+    .countDocuments()
+    .then(countOk => res.json(countOk))
+    .catch(err => res.status(400).json(err));
+});
+
+router.post("/update_messgae_groups", (req, res) => {
+  MessageModel.updateMany(
+    { listUserRead: { $ne: "5dd8abc3ffd7103014c7df4a" } },
+    { $push: { listUserRead: "3" } }
+  )
+    .then(ok => res.json(ok))
+    .catch(err => res.status(400).json(err));
+});
 
 // GET @route /api/users/test
 // @desc test router
@@ -60,6 +81,38 @@ router.get("/get_list_users", (req, res) => {
   UserModel.find({ _id: { $ne: "5dd50d5185949b24755e6a61" } })
     .then(users => res.json(users))
     .catch(err => res.status(400).json(err));
+});
+
+router.post("/create_group", (req, res) => {
+  if (req.body.nameGroup !== "") {
+    const newRoomGroup = new RoomModel({
+      nameGroup: req.body.nameGroup
+    });
+    RoomModel.findOne({ nameGroup: req.body.nameGroup })
+      .then(co => {
+        if (co) {
+          return res
+            .status(400)
+            .json("ten group bi trung vui long thay doi ten");
+        } else {
+          newRoomGroup
+            .save()
+            .then(group1 => {
+              group1.name1 = `${group1._id}_${group1._id}`;
+              group1.name2 = `${group1._id}_${group1._id}`;
+              group1.typeRoom = true;
+
+              group1.save().then(newg => {
+                res.json(newg);
+              });
+            })
+            .catch(err => res.status(400).json(err));
+        }
+      })
+      .catch(err => res.status(400).json(err));
+  } else {
+    res.status(400).json("khong duoc de trong name group");
+  }
 });
 
 export default router;
