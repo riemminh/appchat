@@ -177,6 +177,47 @@ mongoose
           .catch(err => console.log(err));
       });
       // ==========end get messgae
+      // ==========end get messgae unread
+      const getLaiUser = () => {
+        getListUser(socket.id_user)
+          .then(users => {
+            io.sockets.emit("get-all-user-data", users);
+          })
+          .catch(err => console.log(err));
+      };
+      socket.on("get-lai-users", () => {
+        getLaiUser();
+      });
+      socket.on("last-message-unread", data => {
+        MessageModel.findOne({
+          $and: [
+            { msgFrom: data.idListUser },
+            { msgTo: data.idUserActive },
+            { unreadMessage: false }
+          ]
+        })
+          .sort({ createdAt: -1 })
+          .then(mes => {
+            socket.emit("last-message-unread", mes);
+          })
+          .catch(err => console.log(err));
+      });
+      socket.on("query-count-unread", data => {
+        // toi cho nay
+        MessageModel.find({
+          $and: [
+            { msgFrom: data.idListUser },
+            { msgTo: data.idUserActive },
+            { unreadMessage: false }
+          ]
+        })
+          .countDocuments()
+          .then(countUnread => {
+            socket.emit("query-count-unread", countUnread);
+          })
+          .catch(err => console.log(err));
+      });
+      // ==========end get messgae unread
       // disconnect
       const logOutUser = () => {
         updateUserId(socket.id_user, {

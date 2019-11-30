@@ -3,7 +3,8 @@ import { connect } from "react-redux";
 import PropType from "prop-types";
 import { NavLink } from "react-router-dom";
 import moment from "moment";
-import {} from "../../../actions/chatActions";
+import CountUnread from "./CountUnread";
+import MessageUnread from "./MessageUnread";
 
 const PropTyeps = {
   listsiderbar: PropType.array,
@@ -52,16 +53,21 @@ class SiderbarChat extends Component {
                     <div className="friend-name">
                       <strong>{user.name}</strong>
                     </div>
-                    <div className="last-message text-muted">
-                      Hello, Are you there?
-                    </div>
+                    <MessageUnread
+                      listsiderbar={listsiderbar}
+                      idListUser={user._id}
+                      idUserActive={idUser}
+                    />
                     {user.isOnline ? null : (
                       <small className="time text-muted">
                         {moment(user.lastOnline).fromNow()}
                       </small>
                     )}
-
-                    <small className="chat-alert label label-danger">1</small>
+                    <CountUnread
+                      listsiderbar={listsiderbar}
+                      idListUser={user._id}
+                      idUserActive={idUser}
+                    />
                   </NavLink>
                 </li>
               )}

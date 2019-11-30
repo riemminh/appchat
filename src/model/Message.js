@@ -8,10 +8,12 @@ const MessageSchema = new Schema(
       type: String
     },
     msgFrom: {
+      // tu user
       type: Schema.Types.ObjectId,
       ref: "users"
     },
     msgTo: {
+      // den riem
       type: Schema.Types.ObjectId,
       ref: "users"
     },

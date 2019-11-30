@@ -111,7 +111,8 @@ body {
 
 .friend-list li a {
   position: relative;
-  display: block;
+  display: inline-block;
+  width: 100%;
   padding: 15px 10px;
   transition: all 0.2s ease;
   -webkit-transition: all 0.2s ease;

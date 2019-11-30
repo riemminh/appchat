@@ -72,6 +72,7 @@ class ContentChat extends Component {
     });
     this._socket.on("get-message-room", messages => {
       // console.log(messages);
+
       let newArrayFilterTrue = messages.filter(
         item => item.unreadMessage === true
       );
@@ -79,7 +80,7 @@ class ContentChat extends Component {
         item => item.unreadMessage === false
       );
       let resultOke = [...newArrayFilterTrue, ...newArrayFilterFalse];
-
+      this._socket.emit("get-lai-users");
       if (this._isMousted) {
         this.setState({
           dataMessage: resultOke
