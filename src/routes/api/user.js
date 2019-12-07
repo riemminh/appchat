@@ -5,6 +5,27 @@ import MessageModel from "../../model/Message";
 
 const router = Router();
 
+router.post("/get_message", (req, res) => {
+  const { dataGetMessage } = req.body;
+  // res.json(dataGetMessage);
+  // console.log(dataGetMessage);
+  MessageModel.find({ room: dataGetMessage.roomId })
+    .sort({ createdAt: -1 })
+    .limit(dataGetMessage.limitMessage)
+    .skip(dataGetMessage.limitMessage * (dataGetMessage.currentPage - 1))
+    .populate("msgFrom")
+    .then(messages => {
+      let messagesReverse = messages.sort();
+      if (messages == "" || messages == undefined || messages == null) {
+        res.json([]);
+      } else {
+        // console.log(messagesReverse);
+        res.json(messagesReverse);
+      }
+    })
+    .catch(err => console.log(err));
+});
+
 router.get("/wow", (req, res) => {
   MessageModel.find({
     listUserRead: { $ne: "5dd8abc3ffd7103014c7df4a" },

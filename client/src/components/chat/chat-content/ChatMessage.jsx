@@ -3,22 +3,19 @@ import moment from "moment";
 
 class ChatMessage extends Component {
   _isMousted = true;
-  componentWillReceiveProps(nextProps) {
-    if (this.props.dataMessage !== nextProps.dataMessage) {
-      if (this._isMousted) {
-        setTimeout(() => {
-          this.scrollToBottom();
-        }, 100);
-      }
-    }
+  _isScroll = true;
+
+  componentDidMount() {
+    this.scrollToBottom();
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.dataMessage !== this.props.dataMessage) {
-      this.scrollToBottom();
+      if (this._isScroll) {
+        this.scrollToBottom();
+      }
     }
   }
-
   componentWillUnmount() {
     this._isMousted = false;
   }
@@ -26,12 +23,48 @@ class ChatMessage extends Component {
   scrollToBottom = () => {
     this.messagesEnd.scrollIntoView({ behavior: "smooth" });
   };
+  handleIsSrcollTrue = () => {
+    this._isScroll = true;
+  };
+  scrollXuogMotTi = () => {
+    const { chatref } = this.refs;
+    chatref.scrollTop += 150;
+    this._isScroll = true;
+  };
+  handleScroll = e => {
+    let element = e.target;
 
+    // console.log(element.scrollHeight + " scrollHeight");
+    // console.log(element.scrollTop + " scrollTop");
+    // console.log(element.clientHeight + " clientHeight");
+    if (element.scrollTop === 0) {
+      if (this.props.endmore === true) {
+        this._isScroll = false;
+        this.props.handleGetLoadMoreMessage(
+          this.scrollXuogMotTi,
+          this.handleIsSrcollTrue
+        );
+      } else {
+        console.log("chay dien scroll");
+      }
+    }
+    if (element.scrollHeight - element.scrollTop === element.clientHeight) {
+      // do something at end of scroll
+      //  cai nay la phat hien ket thuc cuon div
+    }
+  };
   render() {
-    const { dataMessage, idUser } = this.props;
+    const { dataMessage, idUser, endmore } = this.props;
     return (
       <div className="chat-message">
-        <ul className="chat">
+        <ul ref="chatref" onScroll={this.handleScroll} className="chat">
+          {console.log(endmore)}
+          {endmore === false && dataMessage.length > 0 && (
+            <li>
+              <div ref="reftop">Khong con tin nhan nao nua</div>
+            </li>
+          )}
+
           {dataMessage.length > 0 ? (
             dataMessage.map(chat => (
               <li
@@ -69,27 +102,6 @@ class ChatMessage extends Component {
             <div>Hien chua co tin nhan nao</div>
           )}
 
-          {/* <li className="right clearfix">
-            <span className="chat-img pull-right">
-              <img
-                src="https://bootdey.com/img/Content/user_1.jpg"
-                alt="User Avatar"
-              />
-            </span>
-            <div className="chat-body clearfix">
-              <div className="header">
-                <strong className="primary-font">Sarah</strong>
-                <small className="pull-right text-muted">
-                  <i className="fa fa-clock-o"></i> 13 mins ago
-                </small>
-              </div>
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales
-                at.
-              </p>
-            </div>
-          </li> */}
           <li>
             <div
               style={{ float: "left", clear: "both" }}

@@ -187,10 +187,15 @@ mongoose
           .then(() => {
             MessageModel.find({ room: dataGetMessage.roomId })
               .sort({ createdAt: -1 })
-              .limit(dataGetMessage.limitMessage)
-              .skip(
-                dataGetMessage.currentPage * (dataGetMessage.currentPage - 1)
+              .limit(
+                dataGetMessage.limitMessage *
+                  (dataGetMessage.currentPage - 1) ===
+                  0
+                  ? 10
+                  : dataGetMessage.limitMessage *
+                      (dataGetMessage.currentPage - 1)
               )
+              .skip(0)
               .populate("msgFrom")
               .then(messages => {
                 let messagesReverse = messages.sort();

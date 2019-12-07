@@ -5,6 +5,7 @@ import PropType from "prop-types";
 import ChatBox from "./ChatBox";
 import ChatMessage from "./ChatMessage";
 import io from "socket.io-client";
+import axios from "axios";
 
 const PropTypes = {
   auth: PropType.object,
@@ -28,7 +29,8 @@ class ContentChat extends Component {
     currentPage: 1,
     dataMessage: [],
     user_connected: "",
-    isUserActive: false
+    isUserActive: false,
+    endmore: true
   };
 
   handleGetroom = () => {
@@ -52,7 +54,10 @@ class ContentChat extends Component {
             ...this.state,
             roomId: roomId,
             isUserActive: true,
-            typeRoom: typeRoom
+            typeRoom: typeRoom,
+            currentPage: 1,
+            limitMessage: 10,
+            endmore: true
           },
           () => {
             dataGetMessage = {
@@ -74,11 +79,23 @@ class ContentChat extends Component {
     this._socket.on("get-message", () => {
       // console.log("chay-messgae");
       const { typeRoom } = this.state;
-      if (typeRoom) {
-        this._socket.emit("get-message-room-groups", dataGetMessage);
-      } else {
-        this._socket.emit("get-message-room", dataGetMessage);
-      }
+      this.setState(
+        {
+          ...this.state,
+          currentPage: 1,
+          limitMessage: 10,
+          endmore: true
+        },
+        () => {
+          dataGetMessage.currentPage = this.state.currentPage;
+          dataGetMessage.limitMessage = this.state.limitMessage;
+          if (typeRoom) {
+            this._socket.emit("get-message-room-groups", dataGetMessage);
+          } else {
+            this._socket.emit("get-message-room", dataGetMessage);
+          }
+        }
+      );
     });
     this._socket.on("get-message-room-groups", messages => {
       this._socket.emit("get-lai-groups");
@@ -125,6 +142,10 @@ class ContentChat extends Component {
     const { dataMessage, isUserActive, roomId } = this.state;
     if (match.params.id !== prevProps.match.params.id) {
       this.handleGetroom();
+      this.setState({
+        ...this.state,
+        endmore: true
+      });
     }
     if (dataMessage !== prevProps.dataMessage) {
     }
@@ -152,12 +173,56 @@ class ContentChat extends Component {
     this._socket.emit("save-message", dataMessage);
   };
 
+  handleGetLoadMoreMessage = (scrollXuogMotTi, handleIsSrcollTrue) => {
+    this.setState(
+      {
+        ...this.state,
+        currentPage: this.state.currentPage + 1
+      },
+      () => {
+        dataGetMessage.currentPage = this.state.currentPage;
+        axios
+          .post("/api/users/get_message", { dataGetMessage })
+          .then(res => {
+            console.log(res.data);
+            const dataMore = res.data;
+            const newdataMessage = [...dataMore, ...this.state.dataMessage];
+            if (dataMore.length > 0) {
+              this.setState(
+                {
+                  ...this.state,
+                  dataMessage: newdataMessage,
+                  endmore: true
+                },
+                () => {
+                  scrollXuogMotTi();
+                }
+              );
+            } else {
+              this.setState(
+                {
+                  ...this.state,
+                  endmore: false
+                },
+                () => {
+                  handleIsSrcollTrue();
+                }
+              );
+            }
+          })
+          .catch(err => console.log(err));
+      }
+    );
+  };
+
   render() {
     return (
       <Fragment>
         <ChatMessage
           idUser={this.props.auth.user._id}
           dataMessage={this.state.dataMessage}
+          handleGetLoadMoreMessage={this.handleGetLoadMoreMessage}
+          endmore={this.state.endmore}
         />
         <ChatBox handleSaveMessage={this.handleSaveMessage} />
       </Fragment>
